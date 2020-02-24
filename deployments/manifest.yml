@@ -65,7 +65,7 @@ items:
               configMapKeyRef:
                 name: secretsdemo
                 key: messageConfig     
-          image: "580003662809.dkr.ecr.us-east-1.amazonaws.com/secrets-demo2:latest"
+          image: "please provide image config"
           imagePullPolicy: "Always"
           livenessProbe:
             httpGet:

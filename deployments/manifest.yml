@@ -1,0 +1,107 @@
+---
+apiVersion: "v1"
+kind: "List"
+items:
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    labels:
+      app: "secretsdemo"
+      version: "1.0"
+      group: "vishnu"
+    name: "secretsdemo"
+  spec:
+    ports:
+    - name: "eks-trial"
+      port: 8080
+      targetPort: 8080
+    selector:
+      app: "secretsdemo"
+      version: "1.0"
+      group: "vishnu"
+    type: "LoadBalancer"
+- apiVersion: "apps/v1"
+  kind: "Deployment"
+  metadata:
+    labels:
+      app: "secretsdemo"
+      version: "1.0"
+      group: "vishnu"
+    name: "secretsdemo"
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: "secretsdemo"
+        version: "1.0"
+        group: "vishnu"
+    template:
+      metadata:
+        labels:
+          app: "secretsdemo"
+          version: "1.0"
+          group: "vishnu"
+      spec:
+        serviceAccountName: eks-sa
+        automountServiceAccountToken: true
+        containers:
+        - env:
+          - name: "KUBERNETES_NAMESPACE"
+            valueFrom:
+              fieldRef:
+                fieldPath: "metadata.namespace"
+          - name: "username"
+            valueFrom:
+              secretKeyRef:
+                name: secretsdemo
+                key: username 
+          - name: "password"
+            valueFrom:
+              secretKeyRef:
+                name: secretsdemo
+                key: password 
+          - name: "messageConfig"
+            valueFrom:
+              configMapKeyRef:
+                name: secretsdemo
+                key: messageConfig     
+          image: "580003662809.dkr.ecr.us-east-1.amazonaws.com/secrets-demo2:latest"
+          imagePullPolicy: "Always"
+          livenessProbe:
+            httpGet:
+              path: "/actuator/health"
+              port: 8080
+              scheme: "HTTP"
+            initialDelaySeconds: 0
+            periodSeconds: 30
+            timeoutSeconds: 10
+          name: "secretsdemo"
+          ports:
+          - containerPort: 8080
+            name: "web"
+            protocol: "TCP"
+          readinessProbe:
+            httpGet:
+              path: "/actuator/health"
+              port: 8080
+              scheme: "HTTP"
+            initialDelaySeconds: 0
+            periodSeconds: 30
+            timeoutSeconds: 10
+- apiVersion: "extensions/v1beta1"
+  kind: "Ingress"
+  metadata:
+    labels:
+      app: "secretsdemo"
+      version: "1.0"
+      group: "vishnu"
+    name: "secretsdemo"
+  spec:
+    rules:
+    - host: ""
+      http:
+        paths:
+        - backend:
+            serviceName: "secretsdemo"
+            servicePort: 8080
+          path: "/"

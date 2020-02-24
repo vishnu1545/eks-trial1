@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: secretsdemo
+  cloud: 
+    kubernetes:
+      config:
+        enabled: true
+        name: secrets-demo-config
+        paths:
+        - configmap/
+      secrets: 
+        enabled: true
+        name: secrets-demo-secrets
+        paths:
+        - secret/
+      reload: 
+        enabled: true
+        monitoring-config-maps: true
+        monitoring-secrets: true
+        strategy: restart-context
+        mode: polling
+        period: 5000
+          
